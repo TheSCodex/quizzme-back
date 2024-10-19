@@ -18,7 +18,7 @@ const User = connection.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    profilePicture: {
+    picture: {
       type: DataTypes.STRING,
       allowNull: true,
       default: "No image provided",
@@ -51,6 +51,14 @@ const User = connection.define(
         key: "id",
       },
       allowNull: false,
+    },
+    recovery_code: {
+      type: DataTypes.STRING(4),
+      allowNull: true,
+    },
+    recovery_code_expires: {
+      type: DataTypes.DATE,
+      allowNull: true,
     },
   },
   {
