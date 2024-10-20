@@ -1,13 +1,11 @@
-import { DataTypes } from "sequelize";
-import connection from "../db.js";
-import Template from "./Template.js";
-import User from "./User.js";
+const {DataTypes} = require('sequelize');
+const connection = require('../db.js');
 
-const Form = connection.define("Form", {
+const Form = connection.define("form", {
   userId: {
     type: DataTypes.INTEGER,
     references: {
-      model: User,
+      model: 'users',
       key: "id",
     },
     allowNull: false,
@@ -15,7 +13,7 @@ const Form = connection.define("Form", {
   templateId: {
     type: DataTypes.INTEGER,
     references: {
-      model: Template,
+      model: 'templates',
       key: "id",
     },
     allowNull: false,
@@ -29,10 +27,6 @@ const Form = connection.define("Form", {
   timestamps: true,
 });
 
-// Relationships
-Form.belongsTo(User, { foreignKey: "userId" });
-Form.belongsTo(Template, { foreignKey: "templateId" });
-
 Form.sync();
 
-export default Form;
+module.exports = Form;

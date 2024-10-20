@@ -1,25 +1,25 @@
-import { DataTypes } from "sequelize";
-import connection from "../db.js";
-import User from "./User.js";
+const { DataTypes } = require("sequelize");
+const connection = require("../db.js");
 
-const Role = connection.define('Role', {
+const Role = connection.define(
+  "role",
+  {
     name: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true,
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
     },
     permissions: {
-        type: DataTypes.JSON,
-        allowNull: false,
-        defaultValue: {},
+      type: DataTypes.JSON, //Switch to JSONB when going postgres
+      allowNull: false,
+      defaultValue: {},
     },
-}, {
+  },
+  {
     timestamps: true,
-});
-
-Role.hasMany(User, { foreignKey: "roleId" });
-User.belongsTo(Role, { foreignKey: "roleId" });
+  }
+);
 
 Role.sync();
 
-export default Role;
+module.exports = Role;

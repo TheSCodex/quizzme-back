@@ -1,9 +1,8 @@
-import { DataTypes } from "sequelize";
-import connection from "../db.js";
-import Role from "./Role.js";
+const { DataTypes } = require('sequelize');
+const connection = require('../db.js');
 
 const User = connection.define(
-  "User",
+  'user',
   {
     name: {
       type: DataTypes.STRING,
@@ -21,7 +20,7 @@ const User = connection.define(
     picture: {
       type: DataTypes.STRING,
       allowNull: true,
-      default: "No image provided",
+      defaultValue: 'No image provided',
     },
     last_login_time: {
       type: DataTypes.DATE,
@@ -30,25 +29,25 @@ const User = connection.define(
       type: DataTypes.DATE,
     },
     status: {
-      type: DataTypes.ENUM("active", "blocked"),
+      type: DataTypes.ENUM('active', 'blocked'),
       allowNull: false,
-      defaultValue: "active",
+      defaultValue: 'active',
     },
     theme: {
-      type: DataTypes.ENUM("light", "dark"),
+      type: DataTypes.ENUM('light', 'dark'),
       allowNull: false,
-      defaultValue: "light",
+      defaultValue: 'light',
     },
     language: {
-      type: DataTypes.ENUM("en", "es", "fr"),
+      type: DataTypes.ENUM('en', 'es', 'fr'),
       allowNull: false,
-      defaultValue: "en",
+      defaultValue: 'en',
     },
     roleId: {
       type: DataTypes.INTEGER,
       references: {
-        model: Role,
-        key: "id",
+        model: 'roles',
+        key: 'id',
       },
       allowNull: false,
     },
@@ -66,9 +65,6 @@ const User = connection.define(
   }
 );
 
-User.belongsTo(Role, { foreignKey: "roleId" });
-Role.hasMany(User, { foreignKey: "roleId" });
+User.sync();
 
-await User.sync();
-
-export default User;
+module.exports = User;

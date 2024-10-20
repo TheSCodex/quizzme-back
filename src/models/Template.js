@@ -1,9 +1,8 @@
-import { DataTypes } from "sequelize";
-import connection from "../db.js";
-import User from "./User.js";
+const { DataTypes } = require("sequelize");
+const connection = require("../db.js");
 
 const Template = connection.define(
-  "Template",
+  "template",
   {
     title: {
       type: DataTypes.STRING,
@@ -26,18 +25,24 @@ const Template = connection.define(
     createdBy: {
       type: DataTypes.INTEGER,
       references: {
-        model: User,
+        model: "users",
         key: "id",
       },
       allowNull: false,
     },
     tags: {
-      type: DataTypes.JSON,
+      type: DataTypes.JSON, //Switch to JSONB when going postgres
       allowNull: true,
       defaultValue: [],
     },
     category: {
-      type: DataTypes.ENUM("education", "health", "technology", "entertainment", "other"),
+      type: DataTypes.ENUM(
+        "education",
+        "health",
+        "technology",
+        "entertainment",
+        "other"
+      ),
       allowNull: false,
       defaultValue: "other",
     },
@@ -47,9 +52,6 @@ const Template = connection.define(
   }
 );
 
-User.hasMany(Template, { foreignKey: "createdBy" });
-Template.belongsTo(User, { foreignKey: "createdBy" });
-
 Template.sync();
 
-export default Template;
+module.exports = Template;

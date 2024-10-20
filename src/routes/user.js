@@ -1,5 +1,5 @@
-import express from 'express';
-import * as controller from '../controllers/user.js';
+const express = require('express');
+const controller = require('../controllers/user.js');
 
 const userRoutes = express.Router();
 
@@ -12,4 +12,4 @@ userRoutes.delete('/delete-user', controller.deleteUser);
 userRoutes.post('/user/recovery-send', controller.sendRecoveryCode);
 userRoutes.post('/user/recovery-post', controller.resetPassword);
 
-export default userRoutes;
+module.exports = userRoutes;
