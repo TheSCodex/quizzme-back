@@ -10,6 +10,7 @@ userRoutes.post('/block-user', controller.blockUser);
 userRoutes.post('/unblock-user', controller.unBlockUser);
 userRoutes.delete('/delete-user', controller.deleteUser);
 userRoutes.post('/user/recovery-send', controller.sendRecoveryCode);
+userRoutes.post('/user/recovery-validate', controller.validateRecoveryCode);
 userRoutes.post('/user/recovery-post', controller.resetPassword);
 
 module.exports = userRoutes;

@@ -4,6 +4,7 @@ const cors = require('cors');
 const connection = require('./src/db.js');
 const userRoutes = require('./src/routes/user.js');
 const templateRoutes = require('./src/routes/template.js');
+const formRoutes = require('./src/routes/form.js');
 const setupAssociations = require('./src/models/associations.js');
 const Role = require('./src/models/Role.js');
 const User = require('./src/models/User.js');
@@ -18,7 +19,7 @@ const app = express();
 
 app.use(express.json());
 
-const allowedOrigins = ["http://localhost:5173"];
+const allowedOrigins = ["http://localhost:5174"];
 
 app.use(
   cors({
@@ -39,7 +40,7 @@ app.use((err, req, res, next) => {
   res.status(500).send("Something went wrong");
 });
 
-app.use("/quizme", userRoutes, templateRoutes);
+app.use("/quizme", userRoutes, templateRoutes, formRoutes);
 
 const PORT = process.env.PORT || 8080;
 

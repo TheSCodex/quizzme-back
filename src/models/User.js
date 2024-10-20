@@ -49,6 +49,7 @@ const User = connection.define(
         model: 'roles',
         key: 'id',
       },
+      defaultValue: 2,
       allowNull: false,
     },
     recovery_code: {

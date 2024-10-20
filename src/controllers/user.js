@@ -1,7 +1,7 @@
-const User = require('../models/User.js');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
+const User = require("../models/User.js");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
 
 const generateRecoveryCode = () => {
   return Math.floor(1000 + Math.random() * 9000).toString();
@@ -10,12 +10,12 @@ const generateRecoveryCode = () => {
 const sendRecoveryCode = async (req, res) => {
   const { email } = req.body;
   if (!email) {
-    return res.status(400).json({ message: 'Email is required' });
+    return res.status(400).json({ message: "Email is required" });
   }
   try {
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
     const recoveryCode = generateRecoveryCode();
     const expirationTime = new Date(Date.now() + 15 * 60 * 1000);
@@ -24,7 +24,7 @@ const sendRecoveryCode = async (req, res) => {
       recovery_code_expires: expirationTime,
     });
     const transporter = nodemailer.createTransport({
-      service: 'Gmail',
+      service: "Gmail",
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
@@ -33,7 +33,7 @@ const sendRecoveryCode = async (req, res) => {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: user.email,
-      subject: 'Password Recovery',
+      subject: "Password Recovery",
       html: `<!DOCTYPE html>
             <html lang="en">
             <head>
@@ -59,36 +59,58 @@ const sendRecoveryCode = async (req, res) => {
             </html>`,
     };
     await transporter.sendMail(mailOptions);
-    return res.status(200).json({ message: 'Recovery code sent' });
+    return res.status(200).json({ message: "Recovery code sent" });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+const validateRecoveryCode = async (req, res) => {
+  const { email, recovery_code } = req.body;
+  if (!email || !recovery_code) {
+    return res
+      .status(400)
+      .json({ message: "Email and recovery code are required" });
+  }
+  try {
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (
+      !user.recovery_code ||
+      String(user.recovery_code) !== String(recovery_code) || // Cast to string for comparison
+      new Date() > user.recovery_code_expires
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Invalid or expired recovery code" });
+    }
+    return res.status(200).json({ message: "Recovery code is valid" });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 };
 
 const resetPassword = async (req, res) => {
-  const { email, recovery_code, newPassword } = req.body;
-  if (!email || !recovery_code || !newPassword) {
-    return res.status(400).json({ message: 'Email, recovery code, and new password are required' });
+  const { email, newPassword } = req.body;
+  if (!email || !newPassword) {
+    return res
+      .status(400)
+      .json({ message: "Email and new password are required" });
   }
   try {
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    if (
-      !user.recovery_code ||
-      user.recovery_code !== recovery_code ||
-      new Date() > user.recovery_code_expires
-    ) {
-      return res.status(400).json({ message: 'Invalid or expired recovery code' });
+      return res.status(404).json({ message: "User not found" });
     }
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     await user.update({
       password: hashedPassword,
       recovery_code: null,
-      recovery_code_expires: null
+      recovery_code_expires: null,
     });
-    return res.status(200).json({ message: 'Password reset successfully' });
+    return res.status(200).json({ message: "Password reset successfully" });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -98,13 +120,13 @@ const getAllUsers = async (req, res) => {
   try {
     const users = await User.findAll();
     if (users.length === 0) {
-      return res.status(404).json({ message: 'No users were found' });
+      return res.status(404).json({ message: "No users were found" });
     }
     return res.status(200).json({ users });
   } catch (error) {
-    console.error('Error fetching Users', error);
+    console.error("Error fetching Users", error);
     return res.status(500).json({
-      message: 'An unexpected error occurred while trying to fetch users',
+      message: "An unexpected error occurred while trying to fetch users",
     });
   }
 };
@@ -114,19 +136,19 @@ const getUserById = async (req, res) => {
   if (!userId) {
     return res
       .status(400)
-      .json({ message: 'No id was provided to search for a user' });
+      .json({ message: "No id was provided to search for a user" });
   }
   try {
     const user = await User.findOne({ id: userId });
     if (!user) {
       return res
         .status(404)
-        .json({ message: 'No record found matching provided Id' });
+        .json({ message: "No record found matching provided Id" });
     }
     return res.status(200).json({ user });
   } catch (error) {
-    console.error('An error occurred while trying to block users', error);
-    return res.status(500).json({ message: 'Unable to search for user' });
+    console.error("An error occurred while trying to block users", error);
+    return res.status(500).json({ message: "Unable to search for user" });
   }
 };
 
@@ -136,17 +158,17 @@ const createUser = async (req, res) => {
   if (!password || !email || !name) {
     return res
       .status(400)
-      .json({ message: 'The request body is missing one or more items' });
+      .json({ message: "The request body is missing one or more items" });
   }
   const existingUser = await User.findOne({ where: { email } });
   if (existingUser) {
     return res
       .status(409)
-      .json({ message: 'User with this email already exists' });
+      .json({ message: "User with this email already exists" });
   }
   bcrypt.hash(password, saltRounds, async (err, hash) => {
     if (err) {
-      console.error('Error hashing password:', err);
+      console.error("Error hashing password:", err);
       return res.status(500).json({
         message:
           "An unexpected error occurred while encrypting the user's password",
@@ -160,10 +182,10 @@ const createUser = async (req, res) => {
       });
       return res.status(201).json(newUser);
     } catch (error) {
-      console.error('Error creating user:', error);
+      console.error("Error creating user:", error);
       return res
         .status(500)
-        .json({ message: 'Error creating user in the database' });
+        .json({ message: "Error creating user in the database" });
     }
   });
 };
@@ -173,14 +195,14 @@ const blockUser = async (req, res) => {
   if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
     return res
       .status(400)
-      .json({ message: 'No ids were received to block users' });
+      .json({ message: "No ids were received to block users" });
   }
   try {
-    await User.update({ status: 'blocked' }, { where: { id: userIds } });
-    return res.status(200).json({ message: 'Users blocked successfully' });
+    await User.update({ status: "blocked" }, { where: { id: userIds } });
+    return res.status(200).json({ message: "Users blocked successfully" });
   } catch (error) {
-    console.error('An error occurred while trying to block users', error);
-    return res.status(500).json({ message: 'Unable to block users' });
+    console.error("An error occurred while trying to block users", error);
+    return res.status(500).json({ message: "Unable to block users" });
   }
 };
 
@@ -189,14 +211,14 @@ const unBlockUser = async (req, res) => {
   if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
     return res
       .status(400)
-      .json({ message: 'No ids were received to unblock users' });
+      .json({ message: "No ids were received to unblock users" });
   }
   try {
-    await User.update({ status: 'active' }, { where: { id: userIds } });
-    return res.status(200).json({ message: 'Users unblocked successfully' });
+    await User.update({ status: "active" }, { where: { id: userIds } });
+    return res.status(200).json({ message: "Users unblocked successfully" });
   } catch (error) {
-    console.error('An error occurred while trying to unblock users', error);
-    return res.status(500).json({ message: 'Unable to unblock users' });
+    console.error("An error occurred while trying to unblock users", error);
+    return res.status(500).json({ message: "Unable to unblock users" });
   }
 };
 
@@ -205,57 +227,58 @@ const deleteUser = async (req, res) => {
   if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
     return res
       .status(400)
-      .json({ message: 'No ids were received to delete users' });
+      .json({ message: "No ids were received to delete users" });
   }
   try {
     await User.destroy({
       where: { id: userIds },
     });
-    return res.status(200).json({ message: 'Users deleted successfully' });
+    return res.status(200).json({ message: "Users deleted successfully" });
   } catch (error) {
-    console.error('An error occurred while trying to delete users', error);
-    return res.status(500).json({ message: 'Unable to delete users' });
+    console.error("An error occurred while trying to delete users", error);
+    return res.status(500).json({ message: "Unable to delete users" });
   }
 };
 
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res.status(400).json({ message: 'Email and password are required' });
+    return res.status(400).json({ message: "Email and password are required" });
   }
   try {
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
-    if (user.status === 'blocked') {
+    if (user.status === "blocked") {
       return res
         .status(403)
-        .json({ message: 'This user is currently blocked from the app' });
+        .json({ message: "This user is currently blocked from the app" });
     }
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
     user.last_login_time = Date.now();
     user.save();
     const payload = { id: user.id, email: user.email, name: user.name };
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: '1h',
+      expiresIn: "1h",
     });
     return res.status(200).json({
-      message: 'Login successful',
+      message: "Login successful",
       token,
     });
   } catch (error) {
-    console.error('Error during login:', error);
-    return res.status(500).json({ message: 'An error occurred during login' });
+    console.error("Error during login:", error);
+    return res.status(500).json({ message: "An error occurred during login" });
   }
 };
 
 module.exports = {
   sendRecoveryCode,
   resetPassword,
+  validateRecoveryCode,
   getAllUsers,
   getUserById,
   createUser,
