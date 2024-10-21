@@ -13,8 +13,8 @@ function setupAssociations() {
   User.belongsTo(Role, { foreignKey: "roleId" });
 
   // User and Template association
-  User.hasMany(Template, { foreignKey: "userId" });
-  Template.belongsTo(User, { foreignKey: "userId" });
+  User.hasMany(Template, { foreignKey: "createdBy" });
+  Template.belongsTo(User, { foreignKey: "createdBY" });
 
   // Template and Form association
   Template.hasMany(Form, { foreignKey: "templateId" });

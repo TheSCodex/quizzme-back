@@ -11,7 +11,7 @@ const Tag = connection.define(
     },
   },
   {
-    timestamps: false,
+    timestamps: true,
   }
 );
 

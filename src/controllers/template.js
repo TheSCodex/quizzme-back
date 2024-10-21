@@ -122,6 +122,10 @@ const getTemplates = async (req, res) => {
         {
           model: Question,
         },
+        {
+          model: User,
+          attributes: ['name'],
+        },
       ],
     });
     if (templates.length === 0) {
@@ -149,6 +153,10 @@ const getTemplatesByUser = async (req, res) => {
         },
         {
           model: Question,
+        },
+        {
+          model: User,
+          attributes: ['name'],
         },
       ],
     });
@@ -180,6 +188,10 @@ const getTemplateById = async (req, res) => {
         {
           model: Tag,
           through: { attributes: [] },
+        },
+        {
+          model: User,
+          attributes: ['name'],
         },
       ],
     });

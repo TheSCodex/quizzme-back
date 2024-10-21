@@ -30,11 +30,6 @@ const Template = connection.define(
       },
       allowNull: false,
     },
-    tags: {
-      type: DataTypes.JSON, //Switch to JSONB when going postgres
-      allowNull: true,
-      defaultValue: [],
-    },
     category: {
       type: DataTypes.ENUM(
         "education",
