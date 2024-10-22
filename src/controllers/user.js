@@ -1,4 +1,5 @@
 const User = require("../models/User.js");
+const Role = require("../models/Role.js");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
@@ -79,7 +80,7 @@ const validateRecoveryCode = async (req, res) => {
     }
     if (
       !user.recovery_code ||
-      String(user.recovery_code) !== String(recovery_code) || // Cast to string for comparison
+      String(user.recovery_code) !== String(recovery_code) ||
       new Date() > user.recovery_code_expires
     ) {
       return res
@@ -255,13 +256,14 @@ const loginUser = async (req, res) => {
         .status(403)
         .json({ message: "This user is currently blocked from the app" });
     }
+    const userRole = Role.findOne({ where: { id: user.roleId } });
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
     user.last_login_time = Date.now();
     user.save();
-    const payload = { id: user.id, email: user.email, name: user.name };
+    const payload = { id: user.id, email: user.email, name: user.name,  role: userRole.name, language: user.language, theme: user.theme };
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
@@ -272,6 +274,40 @@ const loginUser = async (req, res) => {
   } catch (error) {
     console.error("Error during login:", error);
     return res.status(500).json({ message: "An error occurred during login" });
+  }
+};
+
+const updateUserLanguage = async (req, res) => {
+  const { email, language } = req.body;
+  if (!email || !language) {
+    return res.status(400).json({ message: "Email and language are required" });
+  }
+  try {
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    await user.update({ language });
+    return res.status(200).json({ message: "Language updated successfully" });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+const updateUserTheme = async (req, res) => {
+  const { email, theme } = req.body;
+  if (!email || !theme) {
+    return res.status(400).json({ message: "Email and theme are required" });
+  }
+  try {
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    await user.update({ theme });
+    return res.status(200).json({ message: "Theme updated successfully" });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
   }
 };
 
@@ -286,4 +322,6 @@ module.exports = {
   unBlockUser,
   deleteUser,
   loginUser,
+  updateUserLanguage,
+  updateUserTheme,
 };

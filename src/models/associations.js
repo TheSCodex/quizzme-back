@@ -6,6 +6,7 @@ const Form = require("./Form.js");
 const Answer = require("./Answer.js");
 const Question = require("./Question.js");
 const TemplateTag = require("./TemplateTag.js");
+const TemplateAccess = require("./TemplateAccess.js");
 
 function setupAssociations() {
   // Role and User association
@@ -14,11 +15,15 @@ function setupAssociations() {
 
   // User and Template association
   User.hasMany(Template, { foreignKey: "createdBy" });
-  Template.belongsTo(User, { foreignKey: "createdBY" });
+  Template.belongsTo(User, { foreignKey: "createdBy" });
 
   // Template and Form association
   Template.hasMany(Form, { foreignKey: "templateId" });
   Form.belongsTo(Template, { foreignKey: "templateId" });
+
+  // Template and User Access association
+  Template.belongsToMany(User, { through: TemplateAccess, onDelete: "CASCADE" });
+  User.belongsToMany(Template, { through: TemplateAccess, onDelete: "CASCADE" });
 
   // User and Form association
   User.hasMany(Form, { foreignKey: "userId" });
@@ -37,8 +42,8 @@ function setupAssociations() {
   Question.belongsTo(Template, { foreignKey: "templateId" });
 
   // Template and Tag association
-  Template.belongsToMany(Tag, { through: TemplateTag, onDelete: 'CASCADE' });
-  Tag.belongsToMany(Template, { through: TemplateTag, onDelete: 'CASCADE' });
+  Template.belongsToMany(Tag, { through: TemplateTag, onDelete: "CASCADE" });
+  Tag.belongsToMany(Template, { through: TemplateTag, onDelete: "CASCADE" });
 }
 
 module.exports = setupAssociations;

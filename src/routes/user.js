@@ -12,5 +12,7 @@ userRoutes.delete('/delete-user', controller.deleteUser);
 userRoutes.post('/user/recovery-send', controller.sendRecoveryCode);
 userRoutes.post('/user/recovery-validate', controller.validateRecoveryCode);
 userRoutes.post('/user/recovery-post', controller.resetPassword);
+userRoutes.post('/user/update-language', controller.updateUserLanguage);
+userRoutes.post('/user/update-theme', controller.updateUserTheme);
 
 module.exports = userRoutes;
