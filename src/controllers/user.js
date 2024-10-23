@@ -263,7 +263,14 @@ const loginUser = async (req, res) => {
     }
     user.last_login_time = Date.now();
     user.save();
-    const payload = { id: user.id, email: user.email, name: user.name,  role: userRole.name, language: user.language, theme: user.theme };
+    const payload = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: userRole.name,
+      language: user.language,
+      theme: user.theme,
+    };
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
@@ -305,7 +312,21 @@ const updateUserTheme = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
     await user.update({ theme });
-    return res.status(200).json({ message: "Theme updated successfully" });
+    const userRole = Role.findOne({ where: { id: user.roleId } });
+    const updatedUser = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: userRole.name,
+      language: user.language,
+      theme: user.theme,
+    };
+    const newToken = jwt.sign(updatedUser, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+    return res
+      .status(200)
+      .json({ message: "Theme updated successfully", token: newToken });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

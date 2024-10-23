@@ -6,47 +6,58 @@ const Answer = require("../models/Answer.js");
 const Tag = require("../models/Tag.js");
 
 const validateQuestionFormat = (question) => {
-  const { content, type, options, min, max } = question;
-  if (!content || !type) {
+  const { questionText, questionType, options, minValue, maxValue } = question;
+  if (!questionText || !questionType) {
     return {
       isValid: false,
       message: "Each question must have content and type defined",
     };
   }
   const allowedTypes = ["text", "multiple_choice", "checkbox", "number"];
-  if (!allowedTypes.includes(type)) {
+  if (!allowedTypes.includes(questionType)) {
     return {
       isValid: false,
-      message: `Invalid question type '${type}' provided. Allowed types are: ${allowedTypes.join(
-        ", "
-      )}`,
+      message: `Invalid question type '${questionType}' provided. Allowed types are: ${allowedTypes.join(", ")}`,
     };
   }
-  switch (type) {
+  switch (questionType) {
     case "multiple_choice":
+      if (!Array.isArray(options) || options.length === 0) {
+        return {
+          isValid: false,
+          message: "Multiple choice questions must have an array of options",
+        };
+      }
+      const uniqueOptions = new Set(options);
+      if (uniqueOptions.size !== options.length) {
+        return {
+          isValid: false,
+          message: "Multiple choice options must be unique",
+        };
+      }
+      break;
     case "checkbox":
       if (!Array.isArray(options) || options.length === 0) {
         return {
           isValid: false,
-          message:
-            "Multiple choice or checkbox questions must have an array of options",
+          message: "Multiple choice or checkbox questions must have an array of options",
         };
       }
       break;
     case "number":
-      if (min !== undefined && typeof min !== "number") {
+      if (minValue !== undefined && typeof minValue !== "number") {
         return {
           isValid: false,
           message: "Number questions must have a valid minimum value",
         };
       }
-      if (max !== undefined && typeof max !== "number") {
+      if (maxValue !== undefined && typeof maxValue !== "number") {
         return {
           isValid: false,
           message: "Number questions must have a valid maximum value",
         };
       }
-      if (min !== undefined && max !== undefined && min >= max) {
+      if (minValue !== undefined && maxValue !== undefined && minValue >= maxValue) {
         return {
           isValid: false,
           message: "Minimum value must be less than maximum value",
@@ -58,9 +69,10 @@ const validateQuestionFormat = (question) => {
     default:
       return {
         isValid: false,
-        message: `Unknown question type '${type}' provided`,
+        message: `Unknown question type '${questionType}' provided`,
       };
   }
+  
   return { isValid: true };
 };
 
@@ -68,46 +80,68 @@ const createTemplate = async (req, res) => {
   const { userId, title, description, accessType, questions, tags, category } =
     req.body;
   if (!userId || !title || !description) {
-    return res.status(400).json({
-      message: "One or more items necessary to create the Template are missing",
-    });
+    return res
+      .status(400)
+      .json({
+        error: {
+          message:
+            "One or more items necessary to create the Template are missing",
+        },
+      });
   }
   if (questions && Array.isArray(questions)) {
     for (let question of questions) {
       const { isValid, message } = validateQuestionFormat(question);
       if (!isValid) {
-        return res.status(400).json({ message });
+        return res.status(422).json({ error: { message } }); // 422 for validation errors
       }
     }
   }
+  const transaction = await sequelize.transaction();
   try {
-    const newTemplate = await Template.create({
-      title: title,
-      description: description,
-      accessType: accessType,
-      createdBy: userId,
-      category: category || "other",
-    });
+    const newTemplate = await Template.create(
+      {
+        title,
+        description,
+        accessType,
+        createdBy: userId,
+        category: category || "other",
+      },
+      { transaction }
+    );
     if (tags && Array.isArray(tags)) {
       for (let tagName of tags) {
         let [tag, created] = await Tag.findOrCreate({
           where: { name: tagName },
           defaults: { name: tagName },
+          transaction,
         });
-        await newTemplate.addTag(tag);
+        await newTemplate.addTag(tag, { transaction });
       }
     }
     if (questions && Array.isArray(questions)) {
       for (let question of questions) {
-        await Question.create({
-          ...question,
-          templateId: newTemplate.id,
-        });
+        await Question.create(
+          {
+            ...question,
+            templateId: newTemplate.id,
+          },
+          { transaction }
+        );
       }
     }
+    await transaction.commit();
     return res.status(201).json(newTemplate);
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    await transaction.rollback();
+    console.error("Error creating template:", error);
+    return res
+      .status(500)
+      .json({
+        error: {
+          message: "An internal server error occurred. Please try again later.",
+        },
+      });
   }
 };
 
@@ -124,7 +158,7 @@ const getTemplates = async (req, res) => {
         },
         {
           model: User,
-          attributes: ['name'],
+          attributes: ["name"],
         },
       ],
     });
@@ -156,7 +190,7 @@ const getTemplatesByUser = async (req, res) => {
         },
         {
           model: User,
-          attributes: ['name'],
+          attributes: ["name"],
         },
       ],
     });
@@ -191,7 +225,7 @@ const getTemplateById = async (req, res) => {
         },
         {
           model: User,
-          attributes: ['name'],
+          attributes: ["name"],
         },
       ],
     });
