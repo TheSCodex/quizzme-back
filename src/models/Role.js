@@ -20,6 +20,4 @@ const Role = connection.define(
   }
 );
 
-Role.sync();
-
 module.exports = Role;

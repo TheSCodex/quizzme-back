@@ -27,6 +27,4 @@ const Form = connection.define("form", {
   timestamps: true,
 });
 
-Form.sync();
-
 module.exports = Form;

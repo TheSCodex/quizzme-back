@@ -47,6 +47,4 @@ const Template = connection.define(
   }
 );
 
-Template.sync();
-
 module.exports = Template;

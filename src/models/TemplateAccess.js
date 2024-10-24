@@ -26,6 +26,4 @@ const TemplateAccess = connection.define(
   }
 );
 
-TemplateAccess.sync();
-
 module.exports = TemplateAccess;

@@ -15,6 +15,4 @@ const Tag = connection.define(
   }
 );
 
-Tag.sync();
-
 module.exports = Tag;

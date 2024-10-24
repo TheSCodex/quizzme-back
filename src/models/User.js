@@ -66,6 +66,4 @@ const User = connection.define(
   }
 );
 
-User.sync();
-
 module.exports = User;

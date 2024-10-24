@@ -30,6 +30,4 @@ const Answer = connection.define(
   }
 );
 
-Answer.sync();
-
 module.exports = Answer;

@@ -47,10 +47,8 @@ app.use("/quizme", userRoutes, templateRoutes, formRoutes);
 
 const PORT = process.env.PORT || 8080;
 
-// Setup associations
 setupAssociations();
 
-// Sync tables
 async function syncTables() {
   try {
     await Role.sync();

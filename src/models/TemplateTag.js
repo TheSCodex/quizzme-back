@@ -24,6 +24,4 @@ const TemplateTag = connection.define(
   }
 );
 
-TemplateTag.sync();
-
 module.exports = TemplateTag;

@@ -38,6 +38,4 @@ const Question = connection.define(
   }
 );
 
-Question.sync();
-
 module.exports = Question;
