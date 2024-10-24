@@ -15,10 +15,6 @@ const runSeeder = async () => {
     console.log("Seeding completed successfully!");
   } catch (error) {
     console.error("Error seeding data:", error);
-  } finally {
-    if (connection) {
-      await connection.close();
-    }
   }
 };
 
