@@ -38,8 +38,8 @@ function setupAssociations() {
   Answer.belongsTo(Question, { foreignKey: "questionId" });
 
   // Template and Question association
-  Template.hasMany(Question, { foreignKey: "templateId" });
-  Question.belongsTo(Template, { foreignKey: "templateId" });
+  Template.hasMany(Question, { foreignKey: "templateId", as: "questions" });
+  Question.belongsTo(Template, { foreignKey: "templateId", as: "template" });
 
   // Template and Tag association
   Template.belongsToMany(Tag, { through: TemplateTag, onDelete: "CASCADE" });

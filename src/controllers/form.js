@@ -2,45 +2,49 @@ const Form = require('../models/Form.js');
 const Answer = require('../models/Answer.js');
 const Template = require('../models/Template.js');
 const Question = require('../models/Question.js');
+const connection = require('../db.js');
 
 const createForm = async (req, res) => {
   const { userId, templateId, answers } = req.body;
-  if (!userId || !templateId || !answers) {
-    return res.status(400).json({
-      message: 'One or more items necessary to create the form are missing.',
-    });
-  }
+  console.log(req.body);
+  const transaction = await connection.transaction();
   try {
-    const template = await Template.findByPk(templateId, {
-      include: Question,
+    const template = await Template.findOne({
+      where: { id: templateId },
+      include: [{ model: Question, as: 'questions' }],
+      transaction
     });
     if (!template) {
-      return res.status(404).json({ message: 'Template not found' });
+      throw new Error('Template not found');
     }
-    const newForm = await Form.create({
+    const form = await Form.create({
       userId,
       templateId,
-    });
+      submissionTime: new Date(),
+    }, { transaction });
     for (let answer of answers) {
-      const question = template.Questions.find(
-        (q) => q.id === answer.questionId
-      );
+      const { questionId, response } = answer;
+      const question = template.questions.find(q => q.id === parseInt(questionId));
       if (!question) {
-        return res.status(400).json({
-          message: `Question with id ${answer.questionId} not found for this template.`,
-        });
+        throw new Error(`Invalid questionId: ${questionId}`);
+      }
+      if (question.questionType === 'multiple_choice') {
+        if (!question.options.includes(response)) {
+          throw new Error(`Invalid response for questionId: ${questionId}`);
+        }
       }
       await Answer.create({
-        formId: newForm.id,
-        questionId: answer.questionId,
-        response: answer.response,
-      });
+        formId: form.id,
+        questionId,
+        response,
+      }, { transaction });
     }
-    return res
-      .status(201)
-      .json({ message: 'Form created successfully', form: newForm });
+    await transaction.commit();
+    res.status(201).json({ message: 'Form submitted successfully', form });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    await transaction.rollback();
+    console.error('Error submitting form:', error.message);
+    res.status(400).json({ error: error.message });
   }
 };
 
@@ -52,16 +56,19 @@ const getFormsByTemplate = async (req, res) => {
   try {
     const forms = await Form.findAll({
       where: { templateId },
-      include: Answer,
+      include: {
+        model: Answer,
+        attributes: ['questionId', 'response'],
+      },
     });
-    if (forms.length === 0) {
-      return res
-        .status(404)
-        .json({ message: 'No forms found for this template.' });
-    }
-    return res.status(200).json(forms);
+    const formsWithAnswers = forms.map(form => ({
+      ...form.dataValues,
+      answers: form.answers || [],
+    }));
+    res.status(200).json(formsWithAnswers);
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    console.error('Error fetching forms:', error.message);
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -71,11 +78,22 @@ const getFormsByUser = async (req, res) => {
     return res.status(400).json({ message: 'No user ID provided' });
   }
   try {
-    const forms = await Form.findAll({ where: { userId }, include: Answer });
-    if (forms.length === 0) {
+    const forms = await Form.findAll({
+      where: { userId },
+      include: {
+        model: Answer,
+        attributes: ['questionId', 'response'],
+      },
+    });
+    const formsWithAnswers = forms.map(form => ({
+      ...form.dataValues,
+      answers: form.answers || [],
+    }));
+
+    if (formsWithAnswers.length === 0) {
       return res.status(404).json({ message: 'No forms found for this user.' });
     }
-    return res.status(200).json(forms);
+    return res.status(200).json(formsWithAnswers);
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -87,11 +105,20 @@ const getFormById = async (req, res) => {
     return res.status(400).json({ message: 'No form ID provided' });
   }
   try {
-    const form = await Form.findByPk(id, { include: Answer });
+    const form = await Form.findByPk(id, {
+      include: {
+        model: Answer,
+        attributes: ['questionId', 'response'],
+      },
+    });
     if (!form) {
       return res.status(404).json({ message: 'Form not found' });
     }
-    return res.status(200).json(form);
+    const formWithAnswers = {
+      ...form.dataValues,
+      answers: form.answers || [],
+    };
+    return res.status(200).json(formWithAnswers);
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

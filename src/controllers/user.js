@@ -256,7 +256,7 @@ const loginUser = async (req, res) => {
         .status(403)
         .json({ message: "This user is currently blocked from the app" });
     }
-    const userRole = Role.findOne({ where: { id: user.roleId } });
+    const userRole = await Role.findOne({ where: { id: user.roleId } });
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid credentials" });

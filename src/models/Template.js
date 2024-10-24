@@ -15,7 +15,7 @@ const Template = connection.define(
     picture: {
       type: DataTypes.STRING,
       allowNull: true,
-      default: "No image provided",
+      default: "https://res.cloudinary.com/djgvhqhdo/image/upload/v1729743174/data-2311261_1280_vfciyl.png",
     },
     accessType: {
       type: DataTypes.ENUM("public", "private"),

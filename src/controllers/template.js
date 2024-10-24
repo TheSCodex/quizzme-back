@@ -4,6 +4,7 @@ const User = require("../models/User.js");
 const Form = require("../models/Form.js");
 const Answer = require("../models/Answer.js");
 const Tag = require("../models/Tag.js");
+const connection = require("../db.js");
 
 const validateQuestionFormat = (question) => {
   const { questionText, questionType, options, minValue, maxValue } = question;
@@ -17,7 +18,9 @@ const validateQuestionFormat = (question) => {
   if (!allowedTypes.includes(questionType)) {
     return {
       isValid: false,
-      message: `Invalid question type '${questionType}' provided. Allowed types are: ${allowedTypes.join(", ")}`,
+      message: `Invalid question type '${questionType}' provided. Allowed types are: ${allowedTypes.join(
+        ", "
+      )}`,
     };
   }
   switch (questionType) {
@@ -40,7 +43,8 @@ const validateQuestionFormat = (question) => {
       if (!Array.isArray(options) || options.length === 0) {
         return {
           isValid: false,
-          message: "Multiple choice or checkbox questions must have an array of options",
+          message:
+            "Multiple choice or checkbox questions must have an array of options",
         };
       }
       break;
@@ -57,7 +61,11 @@ const validateQuestionFormat = (question) => {
           message: "Number questions must have a valid maximum value",
         };
       }
-      if (minValue !== undefined && maxValue !== undefined && minValue >= maxValue) {
+      if (
+        minValue !== undefined &&
+        maxValue !== undefined &&
+        minValue >= maxValue
+      ) {
         return {
           isValid: false,
           message: "Minimum value must be less than maximum value",
@@ -72,32 +80,31 @@ const validateQuestionFormat = (question) => {
         message: `Unknown question type '${questionType}' provided`,
       };
   }
-  
+
   return { isValid: true };
 };
 
 const createTemplate = async (req, res) => {
   const { userId, title, description, accessType, questions, tags, category } =
     req.body;
+  console.log(req.body);
   if (!userId || !title || !description) {
-    return res
-      .status(400)
-      .json({
-        error: {
-          message:
-            "One or more items necessary to create the Template are missing",
-        },
-      });
+    return res.status(400).json({
+      error: {
+        message:
+          "One or more items necessary to create the Template are missing",
+      },
+    });
   }
   if (questions && Array.isArray(questions)) {
     for (let question of questions) {
       const { isValid, message } = validateQuestionFormat(question);
       if (!isValid) {
-        return res.status(422).json({ error: { message } }); // 422 for validation errors
+        return res.status(422).json({ error: { message } });
       }
     }
   }
-  const transaction = await sequelize.transaction();
+  const transaction = await connection.transaction();
   try {
     const newTemplate = await Template.create(
       {
@@ -135,13 +142,11 @@ const createTemplate = async (req, res) => {
   } catch (error) {
     await transaction.rollback();
     console.error("Error creating template:", error);
-    return res
-      .status(500)
-      .json({
-        error: {
-          message: "An internal server error occurred. Please try again later.",
-        },
-      });
+    return res.status(500).json({
+      error: {
+        message: "An internal server error occurred. Please try again later.",
+      },
+    });
   }
 };
 
@@ -155,6 +160,7 @@ const getTemplates = async (req, res) => {
         },
         {
           model: Question,
+          as: "questions",
         },
         {
           model: User,
@@ -187,6 +193,7 @@ const getTemplatesByUser = async (req, res) => {
         },
         {
           model: Question,
+          as: "questions",
         },
         {
           model: User,
@@ -218,6 +225,7 @@ const getTemplateById = async (req, res) => {
       include: [
         {
           model: Question,
+          as: "questions",
         },
         {
           model: Tag,
@@ -352,48 +360,68 @@ const getTemplateStatistics = async (req, res) => {
     const questions = await Question.findAll({
       where: { templateId },
     });
-    const questionStatistics = [];
-    for (let question of questions) {
-      const answers = await Answer.findAll({
-        where: { questionId: question.id },
-      });
-      if (question.type === "text" || question.type === "number") {
-        questionStatistics.push({
-          question: question.content,
-          type: question.type,
-          totalAnswers: answers.length,
-        });
-        continue;
+
+    const allAnswers = await Answer.findAll({
+      where: {
+        questionId: questions.map(q => q.id),
+      },
+    });
+    const totalAnswers = allAnswers.length;
+    let mostRepeatedAnswer = null;
+    let mostChosenAnswer = null;
+    let optionPercentages = null;
+    const answerCounts = {};
+    const optionCounts = {};
+    let totalMultipleChoiceAnswers = 0;
+    for (let answer of allAnswers) {
+      const response = answer.response;
+      const question = questions.find(q => q.id === answer.questionId);
+      if (question.questionType === "text") {
+        if (!answerCounts[response]) {
+          answerCounts[response] = 0;
+        }
+        answerCounts[response]++;
       }
-      const optionCounts = {};
-      for (let answer of answers) {
-        const response = JSON.parse(answer.response);
-        if (Array.isArray(response)) {
-          response.forEach((option) => {
+      if (question.questionType === "multiple_choice") {
+        totalMultipleChoiceAnswers++;
+        let parsedResponse;
+        try {
+          parsedResponse = JSON.parse(response);
+        } catch (e) {
+          parsedResponse = response;
+        }
+        if (Array.isArray(parsedResponse)) {
+          parsedResponse.forEach((option) => {
             if (!optionCounts[option]) optionCounts[option] = 0;
             optionCounts[option]++;
           });
         } else {
-          if (!optionCounts[response]) optionCounts[response] = 0;
-          optionCounts[response]++;
+          if (!optionCounts[parsedResponse]) optionCounts[parsedResponse] = 0;
+          optionCounts[parsedResponse]++;
         }
       }
-      const totalAnswers = answers.length;
-      const optionPercentages = {};
-      Object.keys(optionCounts).forEach((option) => {
-        optionPercentages[option] =
-          ((optionCounts[option] / totalAnswers) * 100).toFixed(2) + "%";
-      });
-      questionStatistics.push({
-        question: question.content,
-        type: question.type,
-        totalAnswers,
-        optionPercentages,
-      });
     }
+
+    mostRepeatedAnswer = Object.keys(answerCounts).reduce((a, b) =>
+      answerCounts[a] > answerCounts[b] ? a : b
+    );
+
+    optionPercentages = {};
+    Object.keys(optionCounts).forEach((option) => {
+      optionPercentages[option] =
+        ((optionCounts[option] / totalMultipleChoiceAnswers) * 100).toFixed(2) + "%";
+    });
+
+    mostChosenAnswer = Object.keys(optionCounts).reduce((a, b) =>
+      optionCounts[a] > optionCounts[b] ? a : b
+    );
+
     return res.status(200).json({
       totalForms,
-      questionStatistics,
+      totalAnswers,
+      mostRepeatedAnswer,
+      mostChosenAnswer,
+      optionPercentages,
     });
   } catch (error) {
     return res.status(500).json({ message: error.message });

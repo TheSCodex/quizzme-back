@@ -9,6 +9,6 @@ templateRoutes.get('/template/user', templateControllers.getTemplatesByUser);
 templateRoutes.get('/template/:id', templateControllers.getTemplateById);
 templateRoutes.put('/template-put/:id', templateControllers.updateTemplate);
 templateRoutes.delete('/template-destroy/:id', templateControllers.deleteTemplate);
-templateRoutes.get('/template/:templateId/statistics', templateControllers.getTemplateStatistics);
+templateRoutes.get('/template/statistics/:templateId', templateControllers.getTemplateStatistics);
 
 module.exports = templateRoutes;

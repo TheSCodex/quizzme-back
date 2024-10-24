@@ -11,8 +11,8 @@ module.exports = {
     const templates = await queryInterface.bulkInsert('templates', [
       {
         title: 'Education Template',
+        picture: 'https://res.cloudinary.com/djgvhqhdo/image/upload/v1729743174/data-2311261_1280_vfciyl.png',
         description: 'Description for Education Template',
-        picture: 'education.png',
         accessType: 'public',
         createdBy: 1,
         category: 'education',
@@ -21,8 +21,8 @@ module.exports = {
       },
       {
         title: 'Health Template',
+        picture: 'https://res.cloudinary.com/djgvhqhdo/image/upload/v1729743174/data-2311261_1280_vfciyl.png',
         description: 'Description for Health Template',
-        picture: 'health.png',
         accessType: 'private',
         createdBy: 1,
         category: 'health',
@@ -31,8 +31,8 @@ module.exports = {
       },
       {
         title: 'Technology Template',
+        picture: 'https://res.cloudinary.com/djgvhqhdo/image/upload/v1729743174/data-2311261_1280_vfciyl.png',
         description: 'Description for Technology Template',
-        picture: 'technology.png',
         accessType: 'public',
         createdBy: 1,
         category: 'technology',
@@ -41,8 +41,8 @@ module.exports = {
       },
       {
         title: 'Entertainment Template',
+        picture: 'https://res.cloudinary.com/djgvhqhdo/image/upload/v1729743174/data-2311261_1280_vfciyl.png',
         description: 'Description for Entertainment Template',
-        picture: 'entertainment.png',
         accessType: 'public',
         createdBy: 1,
         category: 'entertainment',
@@ -51,8 +51,8 @@ module.exports = {
       },
       {
         title: 'Other Template 1',
+        picture: 'https://res.cloudinary.com/djgvhqhdo/image/upload/v1729743174/data-2311261_1280_vfciyl.png',
         description: 'Description for Other Template 1',
-        picture: 'other1.png',
         accessType: 'private',
         createdBy: 1,
         category: 'other',
@@ -61,8 +61,8 @@ module.exports = {
       },
       {
         title: 'Other Template 2',
+        picture: 'https://res.cloudinary.com/djgvhqhdo/image/upload/v1729743174/data-2311261_1280_vfciyl.png',
         description: 'Description for Other Template 2',
-        picture: 'other2.png',
         accessType: 'public',
         createdBy: 1,
         category: 'other',
@@ -71,8 +71,8 @@ module.exports = {
       },
       {
         title: 'Other Template 3',
+        picture: 'https://res.cloudinary.com/djgvhqhdo/image/upload/v1729743174/data-2311261_1280_vfciyl.png',
         description: 'Description for Other Template 3',
-        picture: 'other3.png',
         accessType: 'private',
         createdBy: 1,
         category: 'other',
@@ -81,8 +81,8 @@ module.exports = {
       },
       {
         title: 'Other Template 4',
+        picture: 'https://res.cloudinary.com/djgvhqhdo/image/upload/v1729743174/data-2311261_1280_vfciyl.png',
         description: 'Description for Other Template 4',
-        picture: 'other4.png',
         accessType: 'public',
         createdBy: 1,
         category: 'other',
@@ -193,7 +193,7 @@ module.exports = {
       {
         templateId: template2Id,
         questionText: 'How many hours of sleep do you get on average?',
-        questionType: 'numeric',
+        questionType: 'number',
         minValue: 0,
         maxValue: 24,
         createdAt: new Date(),
@@ -202,7 +202,7 @@ module.exports = {
       {
         templateId: template2Id,
         questionText: 'Do you exercise regularly?',
-        questionType: 'boolean',
+        questionType: 'checkbox',
         createdAt: new Date(),
         updatedAt: new Date(),
       },

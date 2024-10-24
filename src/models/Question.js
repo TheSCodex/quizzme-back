@@ -17,7 +17,7 @@ const Question = connection.define(
       allowNull: false,
     },
     questionType: {
-      type: DataTypes.ENUM("text", "multiple_choice", "numeric", "boolean"),
+      type: DataTypes.ENUM('text', 'number', 'checkbox', 'multiple_choice'),
       allowNull: false,
     },
     options: {
