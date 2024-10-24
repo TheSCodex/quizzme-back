@@ -65,23 +65,18 @@ const getFormsByTemplate = async (req, res) => {
   try {
     const forms = await Form.findAll({
       where: { templateId },
-      include: [
-        {
-          model: Answer,
-          attributes: ["questionId", "response"],
-        },
-        {
-          model: User,
-          attributes: ["name"],
-        },
-      ],
+      include: {
+        model: Answer,
+        attributes: ["questionId", "response"],
+      },
     });
     const formsWithAnswers = await Promise.all(
       forms.map(async (form) => {
+        const user = await User.findByPk(form.userId);
         return {
           ...form.dataValues,
           answers: form.answers || [],
-          user: form.User ? form.User.name : null,
+          user: user ? user.name : null,
         };
       })
     );
@@ -100,26 +95,17 @@ const getFormsByUser = async (req, res) => {
   try {
     const forms = await Form.findAll({
       where: { userId },
-      include: [
-        {
-          model: Answer,
-          attributes: ["questionId", "response"],
-        },
-        {
-          model: User,
-          attributes: ["name"],
-        },
-      ],
+      include: {
+        model: Answer,
+        attributes: ["questionId", "response"],
+      },
     });
-    const formsWithAnswers = await Promise.all(
-      forms.map(async (form) => {
-        return {
-          ...form.dataValues,
-          answers: form.answers || [],
-          user: form.User ? form.User.name : null,
-        };
-      })
-    );
+    const user = await User.findByPk(userId);
+    const formsWithAnswers = forms.map((form) => ({
+      ...form.dataValues,
+      answers: form.answers || [],
+      user: user.name,
+    }));
 
     if (formsWithAnswers.length === 0) {
       return res.status(404).json({ message: "No forms found for this user." });
@@ -137,35 +123,25 @@ const getFormById = async (req, res) => {
   }
   try {
     const form = await Form.findByPk(id, {
-      include: [
-        {
-          model: Answer,
-          attributes: ["questionId", "response"],
-        },
-        {
-          model: User,
-          attributes: ["name"],
-        },
-      ],
+      include: {
+        model: Answer,
+        attributes: ["questionId", "response"],
+      },
     });
+    const user = await User.findByPk(form.userId);
     if (!form) {
       return res.status(404).json({ message: "Form not found" });
     }
-    const formWithAnswers = await Promise.all(
-      form.map(async (form) => {
-        return {
-          ...form.dataValues,
-          answers: form.answers || [],
-          user: form.User ? form.User.name : null,
-        };
-      })
-    );
+    const formWithAnswers = {
+      ...form.dataValues,
+      answers: form.answers || [],
+      user: user.name,
+    };
     return res.status(200).json(formWithAnswers);
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 };
-
 const updateForm = async (req, res) => {
   const { id } = req.params;
   const { answers } = req.body;
