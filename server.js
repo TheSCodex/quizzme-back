@@ -58,8 +58,8 @@ async function syncTables() {
     await Tag.sync();
     await TemplateAccess.sync();
     await TemplateTag.sync();
-    await Answer.sync();
     await Form.sync();
+    await Answer.sync();
 
     console.log('All tables synced successfully.');
   } catch (error) {
