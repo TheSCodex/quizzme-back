@@ -3,20 +3,22 @@ const connection = require("../src/db.js");
 const roleSeeder = require("./20241019214127-seed-roles.js");
 
 const runSeeder = async () => {
+  let queryInterface;
   try {
     await connection.authenticate();
     console.log("Database connected successfully.");
+    queryInterface = connection.getQueryInterface();
 
-    // Get the queryInterface from the connection
-    const queryInterface = connection.getQueryInterface();
+    await connection.sync();
 
-    // Pass the queryInterface and Sequelize reference to the up method
     await roleSeeder.up(queryInterface, Sequelize);
     console.log("Seeding completed successfully!");
   } catch (error) {
     console.error("Error seeding data:", error);
   } finally {
-    await connection.close();
+    if (connection) {
+      await connection.close();
+    }
   }
 };
 
