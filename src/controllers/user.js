@@ -191,6 +191,73 @@ const createUser = async (req, res) => {
   });
 };
 
+const updateUser = async (req, res) => {
+  const { id, name, email, password } = req.body;
+  if (!id || (!name && !email && !password)) {
+    return res
+      .status(400)
+      .json({ message: "Id and at least one field to update are required" });
+  }
+  try {
+    const user = await User.findOne({ where: { id } });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const updates = {};
+    if (name) updates.name = name;
+    if (email) updates.email = email;
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      updates.password = hashedPassword;
+    }
+    await user.update(updates);
+    return res.status(200).json({ message: "User updated successfully" });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    return res
+      .status(500)
+      .json({ message: "Error updating user in the database" });
+  }
+};
+
+const unprivilegeUser = async (req, res) => {
+  const userId = req.body.id;
+  if (!userId) {
+    return res
+      .status(400)
+      .json({ message: "No id was provided to update user" });
+  }
+  try {
+    const user = await User.findOne({ where: { id: userId } });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    await user.update({ roleId: 2 });
+    return res.status(200).json({ message: "User unprivileged successfully" });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal error" });
+  }
+};
+
+const privilegeUser = async (req, res) => {
+  const userId = req.body.id;
+  if (!userId) {
+    return res
+      .status(400)
+      .json({ message: "No id was provided to update user" });
+  }
+  try {
+    const user = await User.findOne({ where: { id: userId } });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    await user.update({ roleId: 1 });
+    return res.status(200).json({ message: "User privileged successfully" });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal error" });
+  }
+};
+
 const blockUser = async (req, res) => {
   const userIds = req.body.ids;
   if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
@@ -345,4 +412,7 @@ module.exports = {
   loginUser,
   updateUserLanguage,
   updateUserTheme,
+  unprivilegeUser,
+  privilegeUser,
+  updateUser,
 };
