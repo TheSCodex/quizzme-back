@@ -1,6 +1,6 @@
-import Sequelize from 'sequelize'; // Import Sequelize
-import connection from '../src/db.js';
-import roleSeeder from './20241019214127-seed-roles.js'
+const Sequelize = require('sequelize');
+const connection = require('../src/db.js');
+const roleSeeder = require('./20241019214127-seed-roles.js');   
 
 const runSeeder = async () => {
   try {
