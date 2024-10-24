@@ -12,6 +12,9 @@ const Template = require('./src/models/Template.js');
 const Form = require('./src/models/Form.js');
 const Answer = require('./src/models/Answer.js');
 const Question = require('./src/models/Question.js');
+const TemplateAccess = require('./src/models/TemplateAccess.js');
+const TemplateTag = require('./src/models/TemplateTag.js');
+const Tag = require('./src/models/Tag.js');
 
 dotenv.config();
 
@@ -50,7 +53,16 @@ setupAssociations();
 // Sync tables
 async function syncTables() {
   try {
-    await connection.sync();
+    await Role.sync();
+    await User.sync();
+    await Question.sync();
+    await Template.sync();
+    await Tag.sync();
+    await TemplateAccess.sync();
+    await TemplateTag.sync();
+    await Answer.sync();
+    await Form.sync();
+
     console.log('All tables synced successfully.');
   } catch (error) {
     console.error('Error syncing tables:', error);
