@@ -53,8 +53,8 @@ async function syncTables() {
   try {
     await Role.sync();
     await User.sync();
-    await Question.sync();
     await Template.sync();
+    await Question.sync();
     await Tag.sync();
     await TemplateAccess.sync();
     await TemplateTag.sync();
