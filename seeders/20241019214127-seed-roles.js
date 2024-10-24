@@ -1,11 +1,22 @@
-'use strict';
+"use strict";
+
+const Role = require("../src/models/Role.js");
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    const { default: Role } = await import('../src/models/Role.js');
-    await queryInterface.bulkInsert(Role.tableName, [
+    // Check if roles already exist
+    const existingRoles = await queryInterface.sequelize.query(
+      `SELECT * FROM "${Role.tableName}";`
+    );
+
+    if (existingRoles[0].length > 0) {
+      console.log("Roles already exist, skipping seed.");
+      return;
+    }
+
+    const rolesToInsert = [
       {
-        name: 'admin',
+        name: "admin",
         permissions: JSON.stringify({
           templates: {
             create: true,
@@ -30,7 +41,7 @@ module.exports = {
         updatedAt: new Date(),
       },
       {
-        name: 'user',
+        name: "user",
         permissions: JSON.stringify({
           templates: {
             create: true,
@@ -55,7 +66,7 @@ module.exports = {
         updatedAt: new Date(),
       },
       {
-        name: 'guest',
+        name: "guest",
         permissions: JSON.stringify({
           templates: {
             create: false,
@@ -79,11 +90,16 @@ module.exports = {
         createdAt: new Date(),
         updatedAt: new Date(),
       },
-    ]);
+    ];
+
+    // Insert roles into the database
+    await queryInterface.bulkInsert(Role.tableName, rolesToInsert);
+    console.log("Roles seeded successfully!");
   },
 
   down: async (queryInterface, Sequelize) => {
-    const { default: Role } = await import('../src/models/Role.js');
+    // Delete all roles
     await queryInterface.bulkDelete(Role.tableName, null, {});
+    console.log("Roles deleted successfully!");
   },
 };

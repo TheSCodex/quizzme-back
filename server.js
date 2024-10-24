@@ -15,6 +15,7 @@ const Question = require('./src/models/Question.js');
 const TemplateAccess = require('./src/models/TemplateAccess.js');
 const TemplateTag = require('./src/models/TemplateTag.js');
 const Tag = require('./src/models/Tag.js');
+const runSeeder = require('./seeders/runSeeder.js');
 
 dotenv.config();
 
@@ -62,6 +63,8 @@ async function syncTables() {
     await Answer.sync();
 
     console.log('All tables synced successfully.');
+    await runSeeder();
+
   } catch (error) {
     console.error('Error syncing tables:', error);
   }
