@@ -154,7 +154,7 @@ const getUserById = async (req, res) => {
 };
 
 const createUser = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, roleId } = req.body;
   const saltRounds = 10;
   if (!password || !email || !name) {
     return res
@@ -180,6 +180,7 @@ const createUser = async (req, res) => {
         name: name,
         email: email,
         password: hash,
+        roleId: roleId || 2,
       });
       return res.status(201).json(newUser);
     } catch (error) {
