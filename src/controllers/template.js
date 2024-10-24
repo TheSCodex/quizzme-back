@@ -85,7 +85,7 @@ const validateQuestionFormat = (question) => {
 };
 
 const createTemplate = async (req, res) => {
-  const { userId, title, description, accessType, questions, tags, category } =
+  const { userId, title, description, accessType, questions, tags, category, imageUrl } =
     req.body;
   console.log(req.body);
   if (!userId || !title || !description) {
@@ -113,6 +113,7 @@ const createTemplate = async (req, res) => {
         accessType,
         createdBy: userId,
         category: category || "other",
+        picture: imageUrl || "https://res.cloudinary.com/djgvhqhdo/image/upload/v1729743174/data-2311261_1280_vfciyl.png",
       },
       { transaction }
     );
