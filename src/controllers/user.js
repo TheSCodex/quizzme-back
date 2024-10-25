@@ -223,7 +223,7 @@ const updateUser = async (req, res) => {
 
 const unprivilegeUser = async (req, res) => {
   const userId = req.body.id;
-  console.log(req.body);
+  console.log("Request body:", req.body);
   if (!userId) {
     return res
       .status(400)
@@ -234,15 +234,18 @@ const unprivilegeUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+    console.log("User found:", user);
     await user.update({ roleId: 2 });
+    console.log("User updated:", user);
     return res.status(200).json({ message: "User unprivileged successfully" });
   } catch (error) {
+    console.error("Error updating user:", error);
     return res.status(500).json({ message: "Internal error" });
   }
 };
 
 const privilegeUser = async (req, res) => {
-  console.log(req.body);
+  console.log("Request body:", req.body);
   const userId = req.body.id;
   if (!userId) {
     return res
@@ -254,9 +257,12 @@ const privilegeUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+    console.log("User found:", user);
     await user.update({ roleId: 1 });
+    console.log("User updated:", user);
     return res.status(200).json({ message: "User privileged successfully" });
   } catch (error) {
+    console.error("Error updating user:", error);
     return res.status(500).json({ message: "Internal error" });
   }
 };
