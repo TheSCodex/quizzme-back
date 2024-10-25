@@ -223,6 +223,7 @@ const updateUser = async (req, res) => {
 
 const unprivilegeUser = async (req, res) => {
   const userId = req.body.id;
+  console.log(req.body);
   if (!userId) {
     return res
       .status(400)
@@ -241,6 +242,7 @@ const unprivilegeUser = async (req, res) => {
 };
 
 const privilegeUser = async (req, res) => {
+  console.log(req.body);
   const userId = req.body.id;
   if (!userId) {
     return res
