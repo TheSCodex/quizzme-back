@@ -398,7 +398,7 @@ const deleteTemplate = async (req, res) => {
     console.log("Checking user authorization for deletion...");
 
     // Authorization check: allow if user is creator or has admin role
-    if (template.createdBy !== userId && user.role !== 1) {
+    if (template.createdBy !== userId && user.roleId !== 1) {
       console.warn("Unauthorized delete attempt by user ID:", userId);
       return res.status(403).json({
         message: "You are not authorized to delete this template",
