@@ -164,6 +164,29 @@ const getFormById = async (req, res) => {
   }
 };
 
+const getAllForms = async (req, res) => {
+  try {
+    const forms = await Form.findAll({
+      include: [
+        {
+          model: Answer,
+          attributes: ["questionId", "response"],
+        },
+        {
+          model: Template,
+          attributes: ["title"],
+        },
+      ],
+    });
+    const formsWithAnswers = forms.map((form) => ({
+      ...form.dataValues,
+      answers: form.answers || [],
+    }));
+    return res.status(200).json(formsWithAnswers);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+}
 
 const updateForm = async (req, res) => {
   const { id } = req.params;
@@ -220,4 +243,5 @@ module.exports = {
   getFormById,
   updateForm,
   deleteForm,
+  getAllForms,
 };
