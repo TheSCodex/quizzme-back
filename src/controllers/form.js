@@ -99,6 +99,10 @@ const getFormsByUser = async (req, res) => {
         model: Answer,
         attributes: ["questionId", "response"],
       },
+      include: {
+        model: Template,
+        attributes: ["name"],
+      }
     });
     const user = await User.findByPk(userId);
     const formsWithAnswers = forms.map((form) => ({
