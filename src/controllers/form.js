@@ -124,30 +124,47 @@ const getFormsByUser = async (req, res) => {
 
 const getFormById = async (req, res) => {
   const { id } = req.params;
+  console.log("Received request for form ID:", id); // Debugging
+
   if (!id) {
+    console.error("No form ID provided"); // Debugging
     return res.status(400).json({ message: "No form ID provided" });
   }
+
   try {
-    const form = await Form.findByPk(id, {
-      include: {
+    const form = await Form.findOne({
+      where: { id },
+      include: [{
         model: Answer,
         attributes: ["questionId", "response"],
-      },
+      }],
     });
-    const user = await User.findByPk(form.userId);
+    console.log("Form retrieved:", form ? form.dataValues : "Form not found"); // Debugging
+
     if (!form) {
+      console.error("Form not found with ID:", id); // Debugging
       return res.status(404).json({ message: "Form not found" });
     }
+
+    const user = await User.findByPk(form.userId);
+    console.log("User retrieved:", user ? user.name : "User not found"); // Debugging
+
     const formWithAnswers = {
       ...form.dataValues,
-      answers: form.answers || [],
-      user: user.name,
+      answers: form.Answers || [],  // Ensure `Answers` instead of `answers`
+      user: user ? user.name : "Unknown User",
     };
+    
+    console.log("Final response object:", formWithAnswers); // Debugging
     return res.status(200).json(formWithAnswers);
+
   } catch (error) {
+    console.error("Error in getFormById:", error); // Debugging
     return res.status(500).json({ message: error.message });
   }
 };
+
+
 const updateForm = async (req, res) => {
   const { id } = req.params;
   const { answers } = req.body;
