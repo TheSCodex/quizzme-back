@@ -222,8 +222,8 @@ const updateUser = async (req, res) => {
 };
 
 const unprivilegeUser = async (req, res) => {
-  const userId = req.body.id;
-  console.log("Request body:", req.body);
+  const userId = req.body.userId; // Updated to userId
+  console.log(req.body);
   if (!userId) {
     return res
       .status(400)
@@ -235,9 +235,13 @@ const unprivilegeUser = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
     console.log("User found:", user);
-    await user.update({ roleId: 2 });
-    console.log("User updated:", user);
-    return res.status(200).json({ message: "User unprivileged successfully" });
+    if (user.roleId !== 2) {
+      await user.update({ roleId: 2 });
+      console.log("User updated:", user);
+      return res.status(200).json({ message: "User unprivileged successfully" });
+    } else {
+      return res.status(200).json({ message: "User already unprivileged" });
+    }
   } catch (error) {
     console.error("Error updating user:", error);
     return res.status(500).json({ message: "Internal error" });
@@ -245,8 +249,8 @@ const unprivilegeUser = async (req, res) => {
 };
 
 const privilegeUser = async (req, res) => {
-  console.log("Request body:", req.body);
-  const userId = req.body.id;
+  console.log(req.body);
+  const userId = req.body.userId; // Updated to userId
   if (!userId) {
     return res
       .status(400)
@@ -258,9 +262,13 @@ const privilegeUser = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
     console.log("User found:", user);
-    await user.update({ roleId: 1 });
-    console.log("User updated:", user);
-    return res.status(200).json({ message: "User privileged successfully" });
+    if (user.roleId !== 1) {
+      await user.update({ roleId: 1 });
+      console.log("User updated:", user);
+      return res.status(200).json({ message: "User privileged successfully" });
+    } else {
+      return res.status(200).json({ message: "User already privileged" });
+    }
   } catch (error) {
     console.error("Error updating user:", error);
     return res.status(500).json({ message: "Internal error" });
