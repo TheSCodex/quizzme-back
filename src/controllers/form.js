@@ -102,7 +102,7 @@ const getFormsByUser = async (req, res) => {
         },
         {
           model: Template,
-          attributes: ["name"],
+          attributes: ["title"],
         },
       ],
     });
