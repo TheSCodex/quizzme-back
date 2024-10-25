@@ -95,14 +95,16 @@ const getFormsByUser = async (req, res) => {
   try {
     const forms = await Form.findAll({
       where: { userId },
-      include: {
-        model: Answer,
-        attributes: ["questionId", "response"],
-      },
-      include: {
-        model: Template,
-        attributes: ["name"],
-      }
+      include: [
+        {
+          model: Answer,
+          attributes: ["questionId", "response"],
+        },
+        {
+          model: Template,
+          attributes: ["name"],
+        },
+      ],
     });
     const user = await User.findByPk(userId);
     const formsWithAnswers = forms.map((form) => ({
