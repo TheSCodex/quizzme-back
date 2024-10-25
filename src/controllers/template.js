@@ -173,28 +173,35 @@ const getTemplates = async (req, res) => {
         },
         {
           model: Question,
-          as: "questions",
+          as: 'questions',
         },
         {
           model: User,
-          attributes: ["name"],
+          attributes: ['name'], // Creator of the template
+        },
+        {
+          model: User,
+          as: 'authorizedUsers', // Include authorized users through TemplateAccess
+          attributes: ['id', 'name'], // Get the authorized user's ID and name
+          through: { attributes: [] }, // Ignore attributes from the junction table
         },
       ],
     });
     if (templates.length === 0) {
-      return res.status(404).json({ message: "No records found" });
+      return res.status(404).json({ message: 'No records found' });
     }
     return res.status(200).json(templates);
   } catch (error) {
-    console.error("Error fetching templates:", error);
-    return res.status(500).json({ message: "Internal server error" });
+    console.error('Error fetching templates:', error);
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
+
 
 const getTemplatesByUser = async (req, res) => {
   const { userId } = req.body;
   if (!userId) {
-    return res.status(400).json({ message: "No user id provided" });
+    return res.status(400).json({ message: 'No user id provided' });
   }
   try {
     const templates = await Template.findAll({
@@ -206,39 +213,42 @@ const getTemplatesByUser = async (req, res) => {
         },
         {
           model: Question,
-          as: "questions",
+          as: 'questions',
         },
         {
           model: User,
-          attributes: ["name"],
+          attributes: ['name'], // Creator of the template
+        },
+        {
+          model: User,
+          as: 'authorizedUsers', // Include authorized users through TemplateAccess
+          attributes: ['id', 'name'], // Get the authorized user's ID and name
+          through: { attributes: [] }, // Ignore attributes from the junction table
         },
       ],
     });
     if (templates.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No records found matching provided user" });
+      return res.status(404).json({ message: 'No records found matching provided user' });
     }
     return res.status(200).json(templates);
   } catch (error) {
-    console.error("Error fetching templates:", error);
-    return res.status(500).json({ message: "Internal server error" });
+    console.error('Error fetching templates:', error);
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
+
 
 const getTemplateById = async (req, res) => {
   const { id } = req.params;
   if (!id) {
-    return res
-      .status(400)
-      .json({ message: "No id was provided to recover a template" });
+    return res.status(400).json({ message: 'No id was provided to recover a template' });
   }
   try {
     const template = await Template.findByPk(id, {
       include: [
         {
           model: Question,
-          as: "questions",
+          as: 'questions',
         },
         {
           model: Tag,
@@ -246,19 +256,26 @@ const getTemplateById = async (req, res) => {
         },
         {
           model: User,
-          attributes: ["name"],
+          attributes: ['name'], // Creator of the template
+        },
+        {
+          model: User,
+          as: 'authorizedUsers', // Include authorized users through TemplateAccess
+          attributes: ['id', 'name'], // Get the authorized user's ID and name
+          through: { attributes: [] }, // Ignore attributes from the junction table
         },
       ],
     });
     if (!template) {
-      return res.status(404).json({ message: "Template not found" });
+      return res.status(404).json({ message: 'Template not found' });
     }
     return res.status(200).json(template);
   } catch (error) {
-    console.error("Error fetching template:", error);
-    return res.status(500).json({ message: "Internal server error" });
+    console.error('Error fetching template:', error);
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
+
 
 const updateTemplate = async (req, res) => {
   const { id } = req.params;

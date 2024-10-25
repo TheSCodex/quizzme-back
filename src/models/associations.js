@@ -22,8 +22,8 @@ function setupAssociations() {
   Form.belongsTo(Template, { foreignKey: "templateId" });
 
   // Template and User Access association
-  Template.belongsToMany(User, { through: TemplateAccess, onDelete: "CASCADE" });
-  User.belongsToMany(Template, { through: TemplateAccess, onDelete: "CASCADE" });
+  Template.belongsToMany(User, { through: TemplateAccess, as: 'authorizedUsers', onDelete: 'CASCADE' });
+  User.belongsToMany(Template, { through: TemplateAccess, as: 'accessibleTemplates', onDelete: 'CASCADE' });  
 
   // User and Form association
   User.hasMany(Form, { foreignKey: "userId" });
