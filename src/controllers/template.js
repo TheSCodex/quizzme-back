@@ -4,6 +4,7 @@ const User = require("../models/User.js");
 const Form = require("../models/Form.js");
 const Answer = require("../models/Answer.js");
 const Tag = require("../models/Tag.js");
+const TemplateAccess = require("../models/TemplateAccess.js");
 const connection = require("../db.js");
 
 const validateQuestionFormat = (question) => {
@@ -85,7 +86,7 @@ const validateQuestionFormat = (question) => {
 };
 
 const createTemplate = async (req, res) => {
-  const { userId, title, description, accessType, questions, tags, category, imageUrl } =
+  const { userId, title, description, accessType, questions, tags, category, imageUrl, authorizedUsers } =
     req.body;
   console.log(req.body);
   if (!userId || !title || !description) {
@@ -136,6 +137,17 @@ const createTemplate = async (req, res) => {
           },
           { transaction }
         );
+      }
+    }
+    if (authorizedUsers && Array.isArray(authorizedUsers)) {
+      for(let userId of authorizedUsers) {
+        await TemplateAccess.create(
+          {
+            userId,
+            templateId: newTemplate.id,
+          },
+          {transaction}
+        )
       }
     }
     await transaction.commit();
