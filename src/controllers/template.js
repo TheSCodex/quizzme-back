@@ -197,7 +197,6 @@ const getTemplates = async (req, res) => {
   }
 };
 
-
 const getTemplatesByUser = async (req, res) => {
   const { userId } = req.body;
   if (!userId) {
@@ -237,7 +236,6 @@ const getTemplatesByUser = async (req, res) => {
   }
 };
 
-
 const getTemplateById = async (req, res) => {
   const { id } = req.params;
   if (!id) {
@@ -276,20 +274,28 @@ const getTemplateById = async (req, res) => {
   }
 };
 
-
 const updateTemplate = async (req, res) => {
   const { id } = req.params;
-  const { userId, title, description, access, questions, tags, category } =
-    req.body;
+  const { userId, title, description, access, questions, tags, category, authorizedUsers } = req.body;
+
+  // Log the incoming request for debugging
+  console.log("Received request:", {
+    id,
+    userId,
+    title,
+    description,
+    access,
+    questions,
+    tags,
+    category,
+    authorizedUsers,
+  });
+
   if (!id) {
-    return res
-      .status(400)
-      .json({ message: "No id was provided to update a template" });
+    return res.status(400).json({ message: "No id was provided to update a template" });
   }
   if (!userId || !title || !description || !questions) {
-    return res
-      .status(400)
-      .json({ message: "One or more items missing are missing" });
+    return res.status(400).json({ message: "One or more items are missing" });
   }
   if (questions && Array.isArray(questions)) {
     for (let question of questions) {
@@ -299,21 +305,22 @@ const updateTemplate = async (req, res) => {
       }
     }
   }
+
   try {
     const template = await Template.findOne({
       where: { id, createdBy: userId },
     });
     if (!template) {
-      return res
-        .status(404)
-        .json({ message: "Template not found or access denied" });
+      return res.status(404).json({ message: "Template not found or access denied" });
     }
+
     await template.update({
       title,
       description,
       access,
       category: category || template.category,
     });
+
     if (tags && Array.isArray(tags)) {
       await template.setTags([]);
       for (let tagName of tags) {
@@ -324,6 +331,7 @@ const updateTemplate = async (req, res) => {
         await template.addTag(tag);
       }
     }
+
     if (questions && Array.isArray(questions)) {
       await Question.destroy({ where: { templateId: template.id } });
       for (let question of questions) {
@@ -333,8 +341,19 @@ const updateTemplate = async (req, res) => {
         });
       }
     }
+
+    if (authorizedUsers && Array.isArray(authorizedUsers)) {
+      for (let userId of authorizedUsers) {
+        await TemplateAccess.create({
+          userId,
+          templateId: template.id, // Fixed newTemplate.id to template.id
+        });
+      }
+    }
+
     return res.status(200).json(template);
   } catch (error) {
+    console.error("Error updating template:", error); // Log the error details
     return res.status(500).json({ message: error.message });
   }
 };
