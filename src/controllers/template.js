@@ -361,11 +361,10 @@ const updateTemplate = async (req, res) => {
 const deleteTemplate = async (req, res) => {
   const { id } = req.params;
   const { userId } = req.body;
-  
+
   console.log("Received delete request for template with ID:", id);
   console.log("Requesting user ID:", userId);
-  
-  // Check if template ID is provided
+
   if (!id) {
     console.warn("No template ID provided in request");
     return res
@@ -374,26 +373,22 @@ const deleteTemplate = async (req, res) => {
   }
 
   try {
-    console.log("Fetching template with ID:", id, "created by user:", userId);
-    
-    // Find the template by ID and creator
-    const template = await Template.findOne({
-      where: { id, createdBy: userId },
-    });
-    
+    // Fetch template by ID
+    console.log("Fetching template with ID:", id);
+    const template = await Template.findOne({ where: { id } });
+
     if (!template) {
-      console.warn("Template not found or access denied. Template ID:", id, "User ID:", userId);
+      console.warn("Template not found. Template ID:", id);
       return res
         .status(404)
-        .json({ message: "Template not found or access denied" });
+        .json({ message: "Template not found" });
     }
 
     console.log("Template found:", template);
+
+    // Fetch the user
     console.log("Fetching user details for user ID:", userId);
-
-    // Find the user by userId
     const user = await User.findByPk(userId);
-
     if (!user) {
       console.warn("User not found. User ID:", userId);
       return res.status(404).json({ message: "User not found" });
@@ -402,7 +397,7 @@ const deleteTemplate = async (req, res) => {
     console.log("User found:", user);
     console.log("Checking user authorization for deletion...");
 
-    // Check if user is authorized to delete the template
+    // Authorization check: allow if user is creator or has admin role
     if (template.createdBy !== userId && user.role !== "admin") {
       console.warn("Unauthorized delete attempt by user ID:", userId);
       return res.status(403).json({
@@ -412,17 +407,16 @@ const deleteTemplate = async (req, res) => {
 
     console.log("User authorized. Deleting template with ID:", id);
 
-    // Delete the template
     await template.destroy();
-    
     console.log("Template deleted successfully. Template ID:", id);
     return res.status(200).json({ message: "Template deleted successfully" });
-    
+
   } catch (error) {
-    console.error("Error deleting template:", error); // Log any caught errors
+    console.error("Error deleting template:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 
 const getTemplateStatistics = async (req, res) => {
