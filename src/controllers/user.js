@@ -119,7 +119,9 @@ const resetPassword = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.findAll();
+    const users = await User.findAll({
+      attributes: { exclude: ["password"] },
+    });
     if (users.length === 0) {
       return res.status(404).json({ message: "No users were found" });
     }
@@ -140,7 +142,10 @@ const getUserById = async (req, res) => {
       .json({ message: "No id was provided to search for a user" });
   }
   try {
-    const user = await User.findOne({ id: userId });
+    const user = await User.findOne({
+      where: { id: userId },
+      attributes: { exclude: ["password"] },
+    });
     if (!user) {
       return res
         .status(404)
@@ -148,10 +153,11 @@ const getUserById = async (req, res) => {
     }
     return res.status(200).json({ user });
   } catch (error) {
-    console.error("An error occurred while trying to block users", error);
+    console.error("An error occurred while trying to fetch the user", error);
     return res.status(500).json({ message: "Unable to search for user" });
   }
 };
+
 
 const createUser = async (req, res) => {
   const { name, email, password, roleId } = req.body;
