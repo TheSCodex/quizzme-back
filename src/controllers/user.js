@@ -158,7 +158,6 @@ const getUserById = async (req, res) => {
   }
 };
 
-
 const createUser = async (req, res) => {
   const { name, email, password, roleId } = req.body;
   const saltRounds = 10;
@@ -218,7 +217,19 @@ const updateUser = async (req, res) => {
       updates.password = hashedPassword;
     }
     await user.update(updates);
-    return res.status(200).json({ message: "User updated successfully" });
+    const userRole = await Role.findOne({ where: { id: user.roleId } });
+    const payload = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: userRole.name,
+      language: user.language,
+      theme: user.theme,
+    };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+    return res.status(200).json({ message: "User updated successfully", token });
   } catch (error) {
     console.error("Error updating user:", error);
     return res
@@ -244,7 +255,9 @@ const unprivilegeUser = async (req, res) => {
     if (user.roleId !== 2) {
       await user.update({ roleId: 2 });
       console.log("User updated:", user);
-      return res.status(200).json({ message: "User unprivileged successfully" });
+      return res
+        .status(200)
+        .json({ message: "User unprivileged successfully" });
     } else {
       return res.status(200).json({ message: "User already unprivileged" });
     }
