@@ -49,6 +49,8 @@ app.use("/quizme", userRoutes, templateRoutes, formRoutes);
 app.post('/create-jira-ticket', async (req, res) => {
   const { authToken, ticketData } = req.body;
 
+  console.log('Received request to create Jira ticket:', { authToken, ticketData });
+
   try {
     const response = await fetch('https://arvazq.atlassian.net/rest/api/3/issue', {
       method: 'POST',
@@ -59,13 +61,19 @@ app.post('/create-jira-ticket', async (req, res) => {
       body: JSON.stringify(ticketData)
     });
 
+    console.log('Jira API response status:', response.status);
+
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Jira API error response:', errorText);
       throw new Error('Failed to create Jira ticket');
     }
 
     const result = await response.json();
+    console.log('Jira API response:', result);
     res.json(result);
   } catch (error) {
+    console.error('Error creating Jira ticket:', error.message);
     res.status(500).json({ error: error.message });
   }
 });
