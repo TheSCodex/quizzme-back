@@ -23,7 +23,7 @@ const app = express();
 
 app.use(express.json());
 
-const allowedOrigins = ["http://localhost:5173", "https://quizme-tawny.vercel.app", "https://afa4-187-150-8-71.ngrok-free.app"];
+const allowedOrigins = ["http://localhost:5173", "https://quizme-tawny.vercel.app", "https://afa4-187-150-8-71.ngrok-free.app", "https://0e48-2806-2f0-8080-9b4b-9901-4da1-6122-5651.ngrok-free.app"];
 
 app.use(
   cors({
